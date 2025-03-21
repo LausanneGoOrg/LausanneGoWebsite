@@ -44,18 +44,18 @@ p {
 
 .button {
   color: white !important;
-  background-color: #f27329;
+  background-color: #bc1823;
   cursor: pointer;
   padding: 6px 15px;
   border-radius: 8px;
 }
 
 .button.blue {
-  background-color: #1dc9bd;
+  background-color: #ff2d2d;
 }
 
 .orange {
-  color: #f27329;
+  color: #bc1823;
 }
 
 /* Styles */
@@ -82,7 +82,7 @@ p {
   gap: 15px;
   font-size: 36px;
   font-weight: 600;
-  color: #f27329;
+  color: #bc1823;
   letter-spacing: -0.05em;
 }
 
@@ -94,7 +94,7 @@ p {
 }
 
 .header-action {
-  color: #f27329;
+  color: #bc1823;
   font-size: 24px;
   font-weight: 500;
 }
@@ -118,12 +118,12 @@ p {
 }
 
 .landing-title {
-  color: #f27329;
+  color: #bc1823;
 }
 
 .landing-title-highlight {
   display: inline;
-  color: #1dc9bd;
+  color: #ff2d2d;
 }
 
 .landing-image-container {
@@ -282,7 +282,7 @@ p {
 
 .download-button {
   color: white !important;
-  background-color: #f27329;
+  background-color: #bc1823;
   cursor: pointer;
   border-radius: 15px;
   font-size: 27px;
