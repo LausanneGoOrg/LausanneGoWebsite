@@ -44,18 +44,18 @@ p {
 
 .button {
   color: white !important;
-  background-color: #bc1823;
+  background-color: #ff2d2d;
   cursor: pointer;
   padding: 6px 15px;
   border-radius: 8px;
 }
 
 .button.blue {
-  background-color: #ff2d2d;
+  background-color: #3f779d;
 }
 
 .orange {
-  color: #bc1823;
+  color: #ff2d2d;
 }
 
 /* Styles */
@@ -82,7 +82,7 @@ p {
   gap: 15px;
   font-size: 36px;
   font-weight: 600;
-  color: #bc1823;
+  color: #ff2d2d;
   letter-spacing: -0.05em;
 }
 
@@ -94,14 +94,14 @@ p {
 }
 
 .header-action {
-  color: #bc1823;
+  color: #ff2d2d;
   font-size: 24px;
   font-weight: 500;
 }
 
 .landing-container {
   width: 100%;
-  margin-top: 100px;
+  margin-top: 50px;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -115,15 +115,16 @@ p {
   flex-direction: column;
   justify-content: space-between;
   align-items: flex-start;
+  color: #212121;
 }
 
 .landing-title {
-  color: #bc1823;
+  color: #ff2d2d;
 }
 
 .landing-title-highlight {
   display: inline;
-  color: #ff2d2d;
+  color: #3f779d;
 }
 
 .landing-image-container {
@@ -135,6 +136,7 @@ p {
 
 .landing-image {
   width: 100%;
+  max-height: 500px;
   object-fit: contain;
 }
 
@@ -282,7 +284,7 @@ p {
 
 .download-button {
   color: white !important;
-  background-color: #bc1823;
+  background-color: #ff2d2d;
   cursor: pointer;
   border-radius: 15px;
   font-size: 27px;
