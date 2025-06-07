@@ -82,14 +82,14 @@ export default function Home() {
             {/* Concept Features - Utiliser flex-wrap pour un meilleur layout */}
             <div className="w-full flex flex-wrap justify-center gap-10">
               {/* Feature 1 - Activities */}
-              <div className="w-[370px] h-[459px] bg-white shadow-[5px_5px_16px_rgba(0,0,0,0.15)] rounded-[25px] flex flex-col justify-center items-center py-5 px-2 gap-3">
+              <div className="w-[370px] h-[459px] bg-white shadow-[5px_5px_16px_rgba(0,0,0,0.15)] rounded-[25px] flex flex-col justify-center items-center py-5 px-2 gap-3 overflow-hidden">
                 <div className="flex-[3] flex justify-center items-center mt-2.5 mb-2.5">
                   <Image
                     src="/Activities.png"
                     alt="Activities"
-                    width={120}
-                    height={90}
-                    className="h-full w-auto object-contain"
+                    width={354}
+                    height={724}
+                    className="w-[40%] object-contain"
                   />
                 </div>
                 <div className="flex-1 w-[80%] flex flex-col justify-start items-center text-center">
@@ -108,7 +108,7 @@ export default function Home() {
                     alt="Events"
                     width={120}
                     height={90}
-                    className="h-full w-auto object-contain"
+                    className="w-[40%] object-contain"
                   />
                 </div>
                 <div className="flex-1 w-[80%] flex flex-col justify-start items-center text-center">
@@ -127,7 +127,7 @@ export default function Home() {
                     alt="Offers"
                     width={120}
                     height={90}
-                    className="h-full w-auto object-contain"
+                    className="w-[40%] object-contain"
                   />
                 </div>
                 <div className="flex-1 w-[80%] flex flex-col justify-start items-center text-center">
@@ -146,7 +146,7 @@ export default function Home() {
                     alt="Collection"
                     width={120}
                     height={90}
-                    className="h-full w-auto object-contain"
+                    className="w-[40%] object-contain"
                   />
                 </div>
                 <div className="flex-1 w-[80%] flex flex-col justify-start items-center text-center">
