@@ -4,6 +4,25 @@
 :root {
   --background: #f2f2f2;
   --foreground: #171717;
+
+  /* Couleurs primaires du thème */
+  --primary-red: #ff2d2d;
+  --primary-red-hover: #e02525;
+  --primary-blue: #3f779d;
+  --primary-blue-hover: #2d5a7a;
+
+  /* États des couleurs primaires */
+  --primary-red-50: #fff1f1;
+  --primary-red-100: #ffe1e1;
+  --primary-red-500: #ff2d2d;
+  --primary-red-600: #e02525;
+  --primary-red-700: #c91e1e;
+
+  --primary-blue-50: #f0f7ff;
+  --primary-blue-100: #e0efff;
+  --primary-blue-500: #3f779d;
+  --primary-blue-600: #2d5a7a;
+  --primary-blue-700: #1f405a;
 }
 
 html {
@@ -19,4 +38,45 @@ body {
   margin: 0;
   padding: 0;
   overflow-x: hidden;
+}
+
+/* Classes utilitaires pour les couleurs primaires */
+.bg-primary-red {
+  background-color: var(--primary-red);
+}
+
+.bg-primary-red:hover {
+  background-color: var(--primary-red-hover);
+}
+
+.text-primary-red {
+  color: var(--primary-red);
+}
+
+.border-primary-red {
+  border-color: var(--primary-red);
+}
+
+.ring-primary-red {
+  --tw-ring-color: var(--primary-red);
+}
+
+.bg-primary-blue {
+  background-color: var(--primary-blue);
+}
+
+.bg-primary-blue:hover {
+  background-color: var(--primary-blue-hover);
+}
+
+.text-primary-blue {
+  color: var(--primary-blue);
+}
+
+.border-primary-blue {
+  border-color: var(--primary-blue);
+}
+
+.ring-primary-blue {
+  --tw-ring-color: var(--primary-blue);
 }

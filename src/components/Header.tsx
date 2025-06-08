@@ -38,6 +38,12 @@ export default function Header() {
             Contact
           </Link>
           <Link
+            href="/business/login"
+            className="text-[#3f779d] text-2xl font-medium hover:opacity-80 transition-opacity"
+          >
+            Entreprises
+          </Link>
+          <Link
             href="#download"
             className="bg-[#ff2d2d] text-white px-[15px] py-[6px] rounded-lg hover:bg-[#e02525] transition-colors text-2xl font-light cursor-pointer"
           >
