@@ -1,14 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useCreateBusiness } from "@/hooks/use-business";
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useUserBusiness, useUpdateBusiness } from "@/hooks/use-business";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import Business, {
-  BusinessPrimaryType,
-  BusinessSecondaryType,
-} from "@/data/business";
+import { BusinessPrimaryType, BusinessSecondaryType } from "@/data/business";
 import { OpeningHours, RegularHours, SpecialDate } from "@/data/utils/opening";
+import { Address } from "@/data/utils/address";
 
 const businessTypes = {
   food: [
@@ -56,26 +54,28 @@ const DAY_NAMES = [
   "Dimanche",
 ];
 
-function CreateBusinessContent() {
+function EditBusinessContent() {
+  const params = useParams();
   const router = useRouter();
-  const createBusiness = useCreateBusiness();
+  const businessId = params.id as string;
+  const { data: business, isLoading: loadingBusiness } =
+    useUserBusiness(businessId);
+  const updateBusiness = useUpdateBusiness();
 
   const [formData, setFormData] = useState({
     name: "",
     picture: "",
     street: "",
-    city: "Lausanne",
+    city: "",
     postalCode: "",
-    country: "Suisse",
+    country: "",
+    streetNumber: "",
     primaryType: "" as BusinessPrimaryType,
     secondaryType: "" as BusinessSecondaryType,
   });
 
   const [openingHours, setOpeningHours] = useState<OpeningHours>({
-    regularHours: Array.from({ length: 7 }, (_, index) => ({
-      day: index,
-      closed: true,
-    })),
+    regularHours: [],
     specialDates: [],
     permanentlyClosed: false,
   });
@@ -83,11 +83,69 @@ function CreateBusinessContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Load business data into form when available
+  useEffect(() => {
+    if (business) {
+      setFormData({
+        name: business.name || "",
+        picture: business.picture || "",
+        street: business.address?.street || "",
+        city: business.address?.city || "",
+        postalCode: business.address?.postalCode || "",
+        country: business.address?.country || "",
+        streetNumber: business.address?.streetNumber || "",
+        primaryType: business.type?.primary || ("" as BusinessPrimaryType),
+        secondaryType:
+          business.type?.secondary || ("" as BusinessSecondaryType),
+      });
+
+      // Initialize opening hours
+      if (business.open_hours) {
+        setOpeningHours(business.open_hours);
+      } else {
+        // Initialize with default regular hours for each day
+        const defaultRegularHours: RegularHours[] = Array.from(
+          { length: 7 },
+          (_, index) => ({
+            day: index,
+            closed: true,
+          })
+        );
+        setOpeningHours({
+          regularHours: defaultRegularHours,
+          specialDates: [],
+          permanentlyClosed: false,
+        });
+      }
+    }
+  }, [business]);
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleAddressChange = (field: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleTypeChange = (field: "primary" | "secondary", value: string) => {
+    if (field === "primary") {
+      setFormData((prev) => ({
+        ...prev,
+        primaryType: value as BusinessPrimaryType,
+      }));
+    } else if (field === "secondary") {
+      setFormData((prev) => ({
+        ...prev,
+        secondaryType: value as BusinessSecondaryType,
+      }));
+    }
   };
 
   const updateRegularHours = (
@@ -157,27 +215,27 @@ function CreateBusinessContent() {
     setError("");
 
     try {
-      const businessData = new Business(
-        {
-          streetNumber: "",
+      const businessData = {
+        business_id: businessId,
+        name: formData.name,
+        picture: formData.picture,
+        address: {
+          coord: business?.address?.coord || { lat: 0, lng: 0 },
           street: formData.street,
+          streetNumber: formData.streetNumber,
           city: formData.city,
           postalCode: formData.postalCode,
           country: formData.country,
-          coord: { lat: 0, lng: 0 }, // Coordonnées à définir plus tard
         },
-        "",
-        formData.name,
-        openingHours,
-        formData.picture,
-        {
+        type: {
           primary: formData.primaryType,
           secondary: formData.secondaryType,
-        }
-      );
+        },
+        open_hours: openingHours,
+      };
 
-      await createBusiness.mutateAsync(businessData);
-      router.push("/business/dashboard");
+      await updateBusiness.mutateAsync(businessData);
+      router.push(`/business/view/${businessId}`);
     } catch (err: any) {
       setError(err.message || "Une erreur s'est produite");
     } finally {
@@ -185,14 +243,59 @@ function CreateBusinessContent() {
     }
   };
 
+  if (loadingBusiness) {
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
+
+  if (!business) {
+    return (
+      <div className="text-center py-12">
+        <div className="text-red-600 mb-4">Établissement non trouvé</div>
+        <button
+          onClick={() => router.push("/business/dashboard")}
+          className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+        >
+          Retour au dashboard
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white shadow rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h1 className="text-2xl font-bold text-gray-900">
-              Ajouter un nouvel établissement
-            </h1>
+            <div className="flex items-center justify-between">
+              <div>
+                <button
+                  onClick={() => router.push(`/business/view/${businessId}`)}
+                  className="text-indigo-600 hover:text-indigo-500 mb-2 flex items-center"
+                >
+                  <svg
+                    className="w-4 h-4 mr-1"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 19l-7-7 7-7"
+                    />
+                  </svg>
+                  Retour aux détails
+                </button>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  Modifier {business?.name}
+                </h1>
+              </div>
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 space-y-8">
@@ -202,6 +305,7 @@ function CreateBusinessContent() {
               </div>
             )}
 
+            {/* ...existing form content... */}
             {/* Informations générales */}
             <div className="space-y-4">
               <h3 className="text-lg font-medium text-gray-900">
@@ -222,10 +326,11 @@ function CreateBusinessContent() {
                   required
                   value={formData.name}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500"
+                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                 />
               </div>
 
+              {/* ...rest of the form... */}
               <div>
                 <label
                   htmlFor="picture"
@@ -239,7 +344,7 @@ function CreateBusinessContent() {
                   name="picture"
                   value={formData.picture}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500"
+                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                 />
               </div>
 
@@ -257,7 +362,7 @@ function CreateBusinessContent() {
                     required
                     value={formData.primaryType}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500"
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                   >
                     <option value="">Sélectionner un type</option>
                     <option value="food">Restauration</option>
@@ -282,7 +387,7 @@ function CreateBusinessContent() {
                     name="secondaryType"
                     value={formData.secondaryType}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500"
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                     disabled={!formData.primaryType}
                   >
                     <option value="">Sélectionner un sous-type</option>
@@ -317,7 +422,7 @@ function CreateBusinessContent() {
                   required
                   value={formData.street}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500"
+                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                 />
               </div>
 
@@ -336,7 +441,7 @@ function CreateBusinessContent() {
                     required
                     value={formData.postalCode}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500"
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                   />
                 </div>
 
@@ -354,7 +459,7 @@ function CreateBusinessContent() {
                     required
                     value={formData.city}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500"
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                   />
                 </div>
 
@@ -372,7 +477,7 @@ function CreateBusinessContent() {
                     required
                     value={formData.country}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500"
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                   />
                 </div>
               </div>
@@ -394,7 +499,7 @@ function CreateBusinessContent() {
                         permanentlyClosed: e.target.checked,
                       }))
                     }
-                    className="rounded border-gray-300 text-red-600 focus:ring-red-500"
+                    className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                   />
                   <span className="ml-2 text-sm text-gray-700">
                     Fermé définitivement
@@ -434,7 +539,7 @@ function CreateBusinessContent() {
                                     e.target.checked
                                   )
                                 }
-                                className="rounded border-gray-300 text-red-600 focus:ring-red-500"
+                                className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                               />
                               <span className="ml-2 text-sm text-gray-600">
                                 Fermé
@@ -452,7 +557,7 @@ function CreateBusinessContent() {
                                   )
                                 }
                                 disabled={!!dayHours.closed}
-                                className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 disabled:bg-gray-100"
+                                className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
                                 placeholder="Ouverture"
                               />
                             </div>
@@ -468,7 +573,7 @@ function CreateBusinessContent() {
                                   )
                                 }
                                 disabled={!!dayHours.closed}
-                                className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 disabled:bg-gray-100"
+                                className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
                                 placeholder="Fermeture"
                               />
                             </div>
@@ -487,7 +592,7 @@ function CreateBusinessContent() {
                       <button
                         type="button"
                         onClick={addSpecialDate}
-                        className="px-3 py-1 text-sm bg-red-600 text-white rounded-md hover:bg-red-700"
+                        className="px-3 py-1 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
                       >
                         + Ajouter une date
                       </button>
@@ -505,7 +610,7 @@ function CreateBusinessContent() {
                             onChange={(e) =>
                               updateSpecialDate(index, "date", e.target.value)
                             }
-                            className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500"
+                            className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                           />
                         </div>
                         <div className="flex items-center">
@@ -519,7 +624,7 @@ function CreateBusinessContent() {
                                 e.target.checked
                               )
                             }
-                            className="rounded border-gray-300 text-red-600 focus:ring-red-500"
+                            className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                           />
                           <span className="ml-2 text-sm text-gray-600">
                             Fermé
@@ -533,7 +638,7 @@ function CreateBusinessContent() {
                               updateSpecialDate(index, "open", e.target.value)
                             }
                             disabled={specialDate.closed}
-                            className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 disabled:bg-gray-100"
+                            className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
                             placeholder="Ouverture"
                           />
                         </div>
@@ -545,7 +650,7 @@ function CreateBusinessContent() {
                               updateSpecialDate(index, "close", e.target.value)
                             }
                             disabled={specialDate.closed}
-                            className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 disabled:bg-gray-100"
+                            className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
                             placeholder="Fermeture"
                           />
                         </div>
@@ -569,7 +674,7 @@ function CreateBusinessContent() {
             <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
               <button
                 type="button"
-                onClick={() => router.push("/business/dashboard")}
+                onClick={() => router.push(`/business/view/${businessId}`)}
                 className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
               >
                 Annuler
@@ -577,9 +682,9 @@ function CreateBusinessContent() {
               <button
                 type="submit"
                 disabled={loading}
-                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-red hover:bg-primary-red focus:outline-none focus:ring-2 focus:ring-offset-2 ring-primary-red disabled:opacity-50"
+                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
               >
-                {loading ? "Création..." : "Créer l'établissement"}
+                {loading ? "Modification..." : "Sauvegarder les modifications"}
               </button>
             </div>
           </form>
@@ -589,10 +694,10 @@ function CreateBusinessContent() {
   );
 }
 
-export default function CreateBusinessPage() {
+export default function EditBusinessClient() {
   return (
     <ProtectedRoute>
-      <CreateBusinessContent />
+      <EditBusinessContent />
     </ProtectedRoute>
   );
 }

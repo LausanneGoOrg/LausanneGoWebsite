@@ -2,7 +2,6 @@ import Profile, { fetchProfile, updateProfile } from "@/data/profile";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useUserId } from "./use-user";
 import { supabase } from "@/services/database";
-import { useSnackbarMessage } from "./use-snackbar";
 
 export const useProfile = () => {
   const userId = useUserId();
@@ -33,7 +32,6 @@ export const useIsAdmin = () => {
 
 export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
-  const snackbarMessage = useSnackbarMessage();
   const userId = useUserId();
 
   return useMutation({
@@ -48,7 +46,6 @@ export const useUpdateProfile = () => {
 export const useDeleteProfile = () => {
   const queryClient = useQueryClient();
   const userId = useUserId();
-  const snackbarMessage = useSnackbarMessage();
 
   return useMutation({
     mutationFn: async () => {

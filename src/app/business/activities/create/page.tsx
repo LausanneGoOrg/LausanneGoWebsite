@@ -10,81 +10,146 @@ import {
   ActivitySecondaryType,
 } from "@/data/activity";
 import { Address } from "@/data/utils/address";
+import { CategoryId, CategoryDefinitions } from "@/constants/Categories";
 
-const ACTIVITY_PRIMARY_TYPES: { value: ActivityPrimaryType; label: string }[] =
-  [
-    { value: "culture", label: "Culturel" },
-    { value: "educational", label: "Éducatif" },
-    { value: "entertainment", label: "Divertissement" },
-    { value: "sports", label: "Sport" },
-    { value: "wellness", label: "Bien-être" },
-    { value: "food", label: "Restauration" },
-    { value: "shopping", label: "Shopping" },
-    { value: "outdoor", label: "Plein air" },
-  ];
+// Mapping des catégories vers les types d'activités
+const CATEGORY_TO_ACTIVITY_TYPE: Record<CategoryId, ActivityPrimaryType> = {
+  [CategoryId.CULTURE]: "culture",
+  [CategoryId.NATURE]: "outdoor",
+  [CategoryId.SPORT]: "sports",
+  [CategoryId.WELLNESS]: "wellness",
+  [CategoryId.FAMILY]: "family",
+  [CategoryId.GASTRONOMY]: "gourmet",
+  [CategoryId.ADVENTURE]: "adventure",
+  // Fallback pour les autres catégories
+  [CategoryId.EDUCATION]: "culture",
+  [CategoryId.ENTERTAINMENT]: "culture",
+  [CategoryId.SOCIAL]: "culture",
+  [CategoryId.BUSINESS]: "culture",
+  [CategoryId.FOOD]: "gourmet",
+  [CategoryId.DRINK]: "gourmet",
+  [CategoryId.SHOPPING]: "culture",
+  [CategoryId.SERVICE]: "culture",
+  [CategoryId.OUTDOOR]: "outdoor",
+  [CategoryId.NIGHTLIFE]: "culture",
+};
+
+// Mapping inversé pour l'affichage
+const ACTIVITY_TYPE_TO_CATEGORY_LABEL: Record<ActivityPrimaryType, string> = {
+  culture: "Culturel",
+  outdoor: "Plein air",
+  sports: "Sport",
+  wellness: "Bien-être",
+  family: "Famille",
+  gourmet: "Gastronomie",
+  adventure: "Aventure",
+  sightseeing: "Visite touristique",
+  water: "Activités aquatiques",
+};
 
 const ACTIVITY_SECONDARY_TYPES: Record<
   ActivityPrimaryType,
   { value: string; label: string }[]
 > = {
-  cultural: [
-    { value: "museum", label: "Musée" },
-    { value: "gallery", label: "Galerie" },
-    { value: "theater", label: "Théâtre" },
-    { value: "cinema", label: "Cinéma" },
-    { value: "concert_hall", label: "Salle de concert" },
-    { value: "other", label: "Autre" },
-  ],
-  educational: [
+  culture: [
+    { value: "museum_visit", label: "Visite de musée" },
+    { value: "art_gallery", label: "Galerie d'art" },
+    { value: "historical_site", label: "Site historique" },
+    { value: "architecture_tour", label: "Tour architectural" },
+    { value: "local_traditions", label: "Traditions locales" },
     { value: "workshop", label: "Atelier" },
-    { value: "course", label: "Cours" },
-    { value: "tour", label: "Visite guidée" },
-    { value: "lecture", label: "Conférence" },
     { value: "other", label: "Autre" },
   ],
-  entertainment: [
-    { value: "bar", label: "Bar" },
-    { value: "club", label: "Club" },
-    { value: "game_center", label: "Centre de jeux" },
-    { value: "escape_room", label: "Escape room" },
+  outdoor: [
+    { value: "hiking", label: "Randonnée" },
+    { value: "biking", label: "Vélo" },
+    { value: "park_visit", label: "Visite de parc" },
+    { value: "garden", label: "Jardin" },
+    { value: "viewpoint", label: "Point de vue" },
+    { value: "picnic", label: "Pique-nique" },
+    { value: "wildlife", label: "Faune sauvage" },
     { value: "other", label: "Autre" },
   ],
   sports: [
-    { value: "gym", label: "Salle de sport" },
-    { value: "pool", label: "Piscine" },
-    { value: "court", label: "Court de sport" },
+    { value: "tennis", label: "Tennis" },
+    { value: "golf", label: "Golf" },
+    { value: "swimming", label: "Natation" },
     { value: "climbing", label: "Escalade" },
+    { value: "fitness", label: "Fitness" },
+    { value: "winter_sports", label: "Sports d'hiver" },
+    { value: "team_sports", label: "Sports d'équipe" },
+    { value: "water_sports", label: "Sports nautiques" },
     { value: "other", label: "Autre" },
   ],
   wellness: [
     { value: "spa", label: "Spa" },
     { value: "massage", label: "Massage" },
+    { value: "thermal_bath", label: "Bains thermaux" },
     { value: "yoga", label: "Yoga" },
     { value: "meditation", label: "Méditation" },
+    { value: "fitness", label: "Fitness" },
     { value: "other", label: "Autre" },
   ],
-  food: [
-    { value: "restaurant", label: "Restaurant" },
-    { value: "cafe", label: "Café" },
-    { value: "bakery", label: "Boulangerie" },
-    { value: "fast_food", label: "Fast food" },
+  family: [
+    { value: "playground", label: "Aire de jeux" },
+    { value: "zoo", label: "Zoo" },
+    { value: "aquarium", label: "Aquarium" },
+    { value: "theme_park", label: "Parc à thème" },
+    { value: "family_trail", label: "Sentier familial" },
+    { value: "educational", label: "Éducatif" },
     { value: "other", label: "Autre" },
   ],
-  shopping: [
-    { value: "retail", label: "Commerce de détail" },
-    { value: "market", label: "Marché" },
-    { value: "boutique", label: "Boutique" },
-    { value: "mall", label: "Centre commercial" },
+  gourmet: [
+    { value: "wine_tasting", label: "Dégustation de vin" },
+    { value: "chocolate_tasting", label: "Dégustation de chocolat" },
+    { value: "cheese_tasting", label: "Dégustation de fromage" },
+    { value: "food_tour", label: "Tour gastronomique" },
+    { value: "cooking_class", label: "Cours de cuisine" },
+    { value: "market_visit", label: "Visite de marché" },
     { value: "other", label: "Autre" },
   ],
-  outdoor: [
-    { value: "park", label: "Parc" },
-    { value: "trail", label: "Sentier" },
+  adventure: [
+    { value: "zipline", label: "Tyrolienne" },
+    { value: "paragliding", label: "Parapente" },
+    { value: "rock_climbing", label: "Escalade" },
+    { value: "canyoning", label: "Canyoning" },
+    { value: "via_ferrata", label: "Via ferrata" },
+    { value: "escape_game", label: "Escape game" },
+    { value: "other", label: "Autre" },
+  ],
+  sightseeing: [
+    { value: "walking_tour", label: "Tour à pied" },
+    { value: "guided_tour", label: "Tour guidé" },
+    { value: "self_guided_tour", label: "Tour auto-guidé" },
+    { value: "landmark", label: "Monument" },
+    { value: "panorama", label: "Panorama" },
+    { value: "photography_spot", label: "Spot photo" },
+    { value: "other", label: "Autre" },
+  ],
+  water: [
+    { value: "lake_cruise", label: "Croisière sur lac" },
+    { value: "swimming", label: "Natation" },
+    { value: "paddleboarding", label: "Paddle" },
+    { value: "kayaking", label: "Kayak" },
+    { value: "sailing", label: "Voile" },
+    { value: "fishing", label: "Pêche" },
     { value: "beach", label: "Plage" },
-    { value: "garden", label: "Jardin" },
     { value: "other", label: "Autre" },
   ],
 };
+
+// Générer la liste des types primaires basée sur les catégories d'activité
+const ACTIVITY_PRIMARY_TYPES = CategoryDefinitions.activity.ids
+  .map((categoryId) => ({
+    value: CATEGORY_TO_ACTIVITY_TYPE[categoryId],
+    label:
+      ACTIVITY_TYPE_TO_CATEGORY_LABEL[CATEGORY_TO_ACTIVITY_TYPE[categoryId]],
+  }))
+  .filter(
+    (item, index, self) =>
+      // Supprimer les doublons
+      self.findIndex((t) => t.value === item.value) === index
+  );
 
 function CreateActivityContent() {
   const router = useRouter();
