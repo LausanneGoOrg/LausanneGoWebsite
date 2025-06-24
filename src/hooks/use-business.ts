@@ -86,7 +86,7 @@ export function useUpdateBusiness() {
           business_type: business.type,
         })
         .eq("business_id", business.business_id)
-        .eq("owner_id", user.id)
+        .eq("business_owner", user.id)
         .select()
         .single();
 
@@ -122,7 +122,7 @@ export function useCreateBusiness() {
           open_hours: business.open_hours,
           picture: business.picture,
           business_type: business.type,
-          owner_id: user.id,
+          business_owner: user.id,
         })
         .select()
         .single();
