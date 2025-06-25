@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useUserBusiness } from "@/hooks/use-business";
+import { useUserBusiness, useUserBusinesses } from "@/hooks/use-business";
+import { useCreateEvent } from "@/hooks/use-events";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { EventType, EventPrimaryType, EventSecondaryType } from "@/data/event";
 import { Address } from "@/data/utils/address";
@@ -105,8 +106,10 @@ function CreateEventContent() {
   const searchParams = useSearchParams();
   const businessId = searchParams.get("businessId");
   const { data: business } = useUserBusiness(businessId || "");
+  const {businesses = []} = useUserBusinesses();
 
   const [formData, setFormData] = useState({
+    businessId: "",
     title: "",
     description: "",
     price: 0,
@@ -187,18 +190,7 @@ function CreateEventContent() {
       };
 
       // TODO: Implement API call to create event
-      // const newEvent = await createEvent({
-      //   business_id: businessId,
-      //   title: formData.title,
-      //   description: formData.description,
-      //   price: formData.price,
-      //   link: formData.link,
-      //   priority: formData.priority,
-      //   picture: formData.picture,
-      //   address,
-      //   open_hours: eventTiming,
-      //   type: eventType,
-      // });
+      
 
       console.log("Event data:", {
         business_id: businessId,
@@ -271,10 +263,31 @@ function CreateEventContent() {
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Basic Information */}
+
             <div className="md:col-span-2">
               <h3 className="text-lg font-medium text-gray-900 mb-4">
                 Informations générales
               </h3>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Business*
+              </label>
+              <select
+                value={formData.businessId}
+                onChange={(e) =>
+                  setFormData({ ...formData, businessId: e.target.value })
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-blue"
+              >
+                <option value="">Sélectionner un business</option>
+                {businesses.map((business) => (
+                  <option key={business.name} value={business.business_id}>
+                    {business.business_id}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>

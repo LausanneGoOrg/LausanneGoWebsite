@@ -277,6 +277,7 @@ const fetchBusinessesByOwner = async (
   }
 
   const { data, error } = await query;
+  
 
   if (error) throw new Error(error.message);
   return data.map(

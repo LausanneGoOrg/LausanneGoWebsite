@@ -39,7 +39,7 @@ export function useUserBusinesses() {
     queryFn: async () => {
       const businesses = await fetchBusinessesByOwner(
         profile?.user_id || "",
-        profile?.is_admin || false
+        profile?.is_admin 
       );
       return businesses;
     },
